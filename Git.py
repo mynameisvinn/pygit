@@ -1,49 +1,51 @@
 from hashlib import sha1
+
 import Blob
 from Tree import Tree
 from Commit import Commit
+from Reference import Reference
 
 class Git(object):
+    """
+    attributes
+    ----------
+    dir_blobs : list
+        list of Blobs
+    dir_trees : list
+        list of Trees
+    dir_commits : list
+        list of Commits
+    Master : Reference
+        represents Master ref
+    Head : Reference
+        initially points at Master ref but could point at Commits
+    """
     def __init__(self):
-        """create new dir
-        """
-        self.index_file = {'fname':[], 'fhash':[]}
-        self.blobs = []
-        pass
+        self.index_file = {}
+        self.dir_blobs = []
+        self.dir_trees = []
+        self.dir_commits = []
+        self.master = Reference("master")
+        self.head = Reference("head", ref=self.master)
+        
 
     def add(self, fname):
         """
-        (1) creates blob; 
-        (2) adds to index file
-        """
-        if self._is_new_file(fname):            
-            b = self._create_blob(fname)  # new blob object
-            self.blobs.append(b)  # store in blob dir
-            self.index_file['fname'].append(fname)  # add file name to index
-            self.index_file['fhash'].append(b.name)  # add hash to index
-        else:
-            print "no new files"
-            pass
-    
-    def _is_new_file(self, fname):
-        """before we add a file, need to check if it's new.
+        creates blob object, and then adds fname/hash to index.
         
-        returns True if new
+        parameters
+        ----------
+        fname : str
+            fname of file to be tracked.
         """
-        # check by fname
-        if fname not in self.index_file['fname']:
-            return True
-        elif self._generate_hash(fname) not in self.index_file['fhash']:
-            return True
-        else:
-            return False
-
+        b = self._create_blob(fname)
+        self.dir_blobs.append(b)  # TODO: write to disk
+        self.index_file[fname] = b.blob_id
 
     def _create_blob(self, fname):
-        """create new blob object from file contents.
+        """create new blob object.
         """
         fh = open(fname, "r").read()
-        print "blob created"
         return Blob.Blob(fh)
 
     def commit(self, msg):
@@ -52,21 +54,20 @@ class Git(object):
         (2) create commit object
         (3) points branch to commit. points the current branch at the new commit object.
         """
-        # create tree from index
-        t = self._create_tree_obj()
+        # step 1: create Tree, which is just an official snapshot of index
+        t = Tree(self.index_file)
+        self.dir_trees.append(t)
         
-        # create commit object, pointing to tree
-        c = self._create_commit_obj(t.tree_hash, msg)
+        # step 2: create Commit
         
-    
-    def _create_commit_obj(self, t_hash, msg):
-        print "creating commit"
-        return Commit(t_hash, msg)
-    
-    def _create_tree_obj(self):
-        print "creating tree"
-        return Tree(self.index_file)
-    
-    def _generate_hash(self, fname):
-        fh = open(fname, "r").read()
-        return sha1(fh).hexdigest()
+        # if this is the 1st commit, then commit's parent is the tree
+        if self.master.reference == None:
+            parent = t
+        else:
+            parent = self.master.reference
+        
+        new_commit_obj = Commit(t.tree_hash, msg, parent)
+        self.dir_commits.append(new_commit_obj)
+        
+        # step 3: master branch points to latest commit object
+        self.master.reference = new_commit_obj
