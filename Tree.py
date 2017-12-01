@@ -3,18 +3,27 @@ from hashlib import sha1
 
 class Tree(object):
     """
-    a tree is a snapshot of the index, and is created everytime "git add" is invoked.
+    a tree is created every time "git commit" is invoked. it is a hash of the current 
+    index, a dict where k = fnames (for files being tracked) and v = corresponding 
+    blob ids.
+
+    trees serve as "snapshots" of the index. this is important because the index changes
+    over time (eg, because there is a new file to be tracked or a tracked file has been 
+    edited). 
+
+    Unlike Commit objects, Trees do not know about their parents.
 
     parameters
     ----------
     index : dict
-        representing files being tracked. key is file name, value is file blob id.
-
+        representing files being tracked. k is file name, v is corresponding blob id.
 
     attributes
     ----------
     ref_type : str
-        object description. could be either Commit, Tree, or Blob.
+        obj description. could be either Commit, Tree, or Blob.
+    index : str
+        index as of the latest commit in str (not dict) representationt.
     id : str:
         unique 20 char for Tree object.
     """

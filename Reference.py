@@ -1,6 +1,6 @@
 class Reference(object):
     """
-    references are labels. they point either Tree or Commit objects.
+    References are labels pointing to either Tree or Commit objects.
 
     parameters
     ----------
