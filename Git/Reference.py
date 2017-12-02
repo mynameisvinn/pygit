@@ -2,6 +2,10 @@ class Reference(object):
     """
     References are labels pointing to either Tree or Commit objects.
 
+    HEAD points to the current branch (which could be MASTER or some 
+    other branch). Since it points to the current branch, it will change 
+    the most often. 
+
     parameters
     ----------
     ref_type : str

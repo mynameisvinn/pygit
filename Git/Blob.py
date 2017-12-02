@@ -2,8 +2,13 @@ from hashlib import sha1
 
 class Blob(object):
     """
-    a blob is a compressed representation of a tracked file. you can always
-    recover the original file from its blob.
+    a Blob is the most basic data type in git. it is a compressed binary representation 
+    of a tracked file. as result, there are always two duplicates of an added file: one
+    existing in the user space (the working copy) and another in Git's objects. this 
+    means you can always recover the original file from its corresponding Blob.
+
+    if you check out a previous Commit, Git will replace the current copy in the user's
+    working space with the decompressed, old Blob file.
 
     parameters
     ----------
